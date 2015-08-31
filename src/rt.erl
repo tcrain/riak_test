@@ -681,8 +681,10 @@ wait_until(Fun, Retry, Delay) when Retry > 0 ->
         true ->
             ok;
         _ when Retry == 1 ->
+            lager:debug("Retry failed."),
             {fail, Res};
         _ ->
+            lager:debug("Retries left ~p, received ~p", [Retry, Res]),
             timer:sleep(Delay),
             wait_until(Fun, Retry-1, Delay)
     end.
@@ -1153,7 +1155,7 @@ join_cluster(Nodes) ->
             %% large amount of redundant handoff done in a sequential join
             [staged_join(Node, Node1) || Node <- OtherNodes],
             plan_and_commit(Node1),
-            try_nodes_ready(Nodes, 3, 500)
+            try_nodes_ready(Nodes, 5, 5000)
     end,
 
     ?assertEqual(ok, wait_until_nodes_ready(Nodes)),
@@ -1187,6 +1189,7 @@ try_nodes_ready(Nodes, N, SleepMs) ->
         Nodes ->
             ok;
         _ ->
+            lager:debug("Retries left ~p, ready nodes ~p", [N, ReadyNodes]),
             timer:sleep(SleepMs),
             try_nodes_ready(Nodes, N-1, SleepMs)
     end.
