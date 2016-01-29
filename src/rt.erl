@@ -448,12 +448,12 @@ staged_join(Node, PNode) ->
     ok.
 
 plan_and_commit(Node) ->
-    timer:sleep(500),
+    timer:sleep(5000),
     lager:info("planning and commiting cluster join"),
     case rpc:call(Node, riak_core_claimant, plan, []) of
         {error, ring_not_ready} ->
             lager:info("plan: ring not ready"),
-            timer:sleep(100),
+            timer:sleep(1000),
             plan_and_commit(Node);
         {ok, _, _} ->
             lager:info("plan: done"),
